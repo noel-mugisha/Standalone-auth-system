@@ -12,6 +12,7 @@ import java.security.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -24,6 +25,7 @@ public class JwtService {
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
+    private String keyId;
 
     @PostConstruct
     public void init() {
@@ -34,14 +36,20 @@ public class JwtService {
             KeyPair keyPair = generator.generateKeyPair();
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
+            keyId = UUID.randomUUID().toString();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error initializing RSA key pair", e);
         }
     }
 
-    // --- Public method to expose the public key for the JWKS endpoint ---
+    //  Public method to expose the public key for the JWKS endpoint
     public PublicKey getPublicKey() {
         return publicKey;
+    }
+
+    //  Getter for the keyId
+    public String getKeyId() {
+        return keyId;
     }
 
     public String generateAccessToken(User user) {
@@ -64,6 +72,7 @@ public class JwtService {
 
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
         return Jwts.builder()
+                .setHeaderParam("kid", keyId)
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
