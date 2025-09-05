@@ -21,29 +21,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // 1. Delegate to the default service to fetch the user details
         OAuth2User oauth2User = super.loadUser(userRequest);
         Map<String, Object> attributes = oauth2User.getAttributes();
-
         String email = (String) attributes.get("email");
-        String linkedinId = (String) attributes.get("sub"); // 'sub' is the standard claim for subject identifier
-
-        // 2. Find or create the user in our local database
+        String linkedinId = (String) attributes.get("sub");
         Optional<User> userOptional = userRepository.findByEmail(email);
-
         User user = userOptional.map(existingUser -> {
-            // Case 1: User with this email already exists. Link their LinkedIn ID if not already linked.
             if (existingUser.getLinkedinId() == null) {
                 existingUser.setLinkedinId(linkedinId);
                 userRepository.save(existingUser);
             }
             return existingUser;
         }).orElseGet(() -> {
-            // Case 2: User is completely new. Create and save them.
             User newUser = User.builder()
                     .email(email)
                     .linkedinId(linkedinId)
-                    .emailVerified(true) // We trust LinkedIn to have a verified email
+                    .emailVerified(true)
                     .role(Role.USER)
                     .build();
             return userRepository.save(newUser);

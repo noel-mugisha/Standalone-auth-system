@@ -1,14 +1,13 @@
 package com.ist.idp.config;
 
-import com.ist.idp.dto.response.AuthResponse; // You might need to import this
+import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.repository.UserRepository;
 import com.ist.idp.security.jwt.JwtService;
-import com.ist.idp.utils.CookieUtil; // Import CookieUtil
+import com.ist.idp.utils.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -42,11 +41,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 jwtService.generateAccessToken(user),
                 jwtService.generateRefreshToken(user)
         );
-        HttpHeaders headers = new HttpHeaders();
-        cookieUtil.addCookieToResponse(headers, "refresh_token", authResponse.refreshToken());
+
+        cookieUtil.addCookieToServletResponse(response, "refresh_token", authResponse.refreshToken());
+
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendRedirectUrl)
                 .queryParam("access_token", authResponse.accessToken())
                 .build().toUriString();
+
         response.sendRedirect(redirectUrl);
     }
 }

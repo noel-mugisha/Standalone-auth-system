@@ -32,7 +32,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequest request) {
         AuthResponse authResponse = authService.login(request);
         HttpHeaders headers = new HttpHeaders();
-        cookieUtil.addCookieToResponse(headers, "refresh_token", authResponse.refreshToken());
+        cookieUtil.addCookieToResponseHeaders(headers, "refresh_token", authResponse.refreshToken());
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(new AuthResponseDto(authResponse.accessToken()));
@@ -50,7 +50,7 @@ public class AuthController {
     ) {
         AuthResponse authResponse = authService.refreshToken(refreshToken);
         HttpHeaders headers = new HttpHeaders();
-        cookieUtil.addCookieToResponse(headers, "refresh_token", authResponse.refreshToken());
+        cookieUtil.addCookieToResponseHeaders(headers, "refresh_token", authResponse.refreshToken());
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(new AuthResponseDto(authResponse.accessToken()));
