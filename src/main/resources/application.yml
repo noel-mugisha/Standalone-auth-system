@@ -43,7 +43,7 @@ spring:
           linkedin:
             client-id: ${LINKEDIN_CLIENT_ID}
             client-secret: ${LINKEDIN_CLIENT_SECRET}
-            scope: r_liteprofile, r_emailaddress
+            scope: openid, profile, email
             redirect-uri: http://localhost:8080/login/oauth2/code/linkedin
             authorization-grant-type: authorization_code
             client-name: LinkedIn

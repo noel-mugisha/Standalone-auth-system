@@ -3,6 +3,7 @@ package com.ist.idp.controller;
 import com.ist.idp.dto.request.LoginRequest;
 import com.ist.idp.dto.request.RegisterRequest;
 import com.ist.idp.dto.request.VerifyOtpRequest;
+import com.ist.idp.dto.response.ApiMessageResponse;
 import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.dto.response.AuthResponseDto;
 import com.ist.idp.service.AuthService;
@@ -22,9 +23,9 @@ public class AuthController {
     private final CookieUtil cookieUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         authService.register(request);
-        return new ResponseEntity<>("Registration successful. Please check your email for the verification OTP.", HttpStatus.CREATED);
+        return new ResponseEntity<>(new ApiMessageResponse("Registration successful. Please check your email for the verification OTP."), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -38,9 +39,9 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(@RequestBody VerifyOtpRequest request) {
+    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
         authService.verifyOtp(request.email(), request.otp());
-        return ResponseEntity.ok("Email verified successfully. You can now log in.");
+        return ResponseEntity.ok(new ApiMessageResponse("Email verified successfully. You can now log in."));
     }
 
     @PostMapping("/refresh-token")

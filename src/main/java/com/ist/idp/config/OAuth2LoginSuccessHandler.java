@@ -1,12 +1,14 @@
 package com.ist.idp.config;
 
+import com.ist.idp.dto.response.AuthResponse; // You might need to import this
 import com.ist.idp.repository.UserRepository;
 import com.ist.idp.security.jwt.JwtService;
-import jakarta.servlet.ServletException;
+import com.ist.idp.utils.CookieUtil; // Import CookieUtil
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -21,33 +23,30 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final CookieUtil cookieUtil;
 
-    @Value( "${frontend.redirect-url}")
-    private String frontendRedirectUrl = "http://your-frontend-widget-s3-url.com/login-success";
+    @Value("${frontend.redirect-url}")
+    private String frontendRedirectUrl;
 
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication
-    )
-    throws IOException, ServletException, IOException {
+    ) throws IOException {
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         String email = oauth2User.getAttribute("email");
 
-        // Find the user from our database (synced by CustomOAuth2UserService)
         var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("User not found in database after OAuth2 login"));
+                .orElseThrow(() -> new IllegalStateException("User not found in DB after OAuth2 login. This should not happen."));
 
-        // Generate our custom JWTs
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-
-        // Build the redirect URL with tokens as query parameters
+        AuthResponse authResponse = new AuthResponse(
+                jwtService.generateAccessToken(user),
+                jwtService.generateRefreshToken(user)
+        );
+        HttpHeaders headers = new HttpHeaders();
+        cookieUtil.addCookieToResponse(headers, "refresh_token", authResponse.refreshToken());
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendRedirectUrl)
-                .queryParam("access_token", accessToken)
-                .queryParam("refresh_token", refreshToken)
+                .queryParam("access_token", authResponse.accessToken())
                 .build().toUriString();
-
-        // Redirect the user
         response.sendRedirect(redirectUrl);
     }
 }
