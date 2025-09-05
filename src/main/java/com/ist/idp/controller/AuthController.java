@@ -1,9 +1,10 @@
 package com.ist.idp.controller;
 
-import com.ist.idp.dto.AuthResponse;
-import com.ist.idp.dto.LoginRequest;
-import com.ist.idp.dto.RegisterRequest;
-import com.ist.idp.dto.VerifyOtpRequest;
+import com.ist.idp.dto.request.RefreshTokenRequest;
+import com.ist.idp.dto.response.AuthResponse;
+import com.ist.idp.dto.request.LoginRequest;
+import com.ist.idp.dto.request.RegisterRequest;
+import com.ist.idp.dto.request.VerifyOtpRequest;
 import com.ist.idp.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,12 @@ public class AuthController {
     public ResponseEntity<String> verifyOtp(@RequestBody VerifyOtpRequest request) {
         authService.verifyOtp(request.email(), request.otp());
         return ResponseEntity.ok("Email verified successfully. You can now log in.");
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        AuthResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -1,14 +1,15 @@
 package com.ist.idp.service;
 
-import com.ist.idp.dto.AuthResponse;
-import com.ist.idp.dto.LoginRequest;
+import com.ist.idp.dto.request.RefreshTokenRequest;
+import com.ist.idp.dto.response.AuthResponse;
+import com.ist.idp.dto.request.LoginRequest;
 import com.ist.idp.enums.Role;
 import com.ist.idp.security.jwt.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import com.ist.idp.dto.RegisterRequest;
+import com.ist.idp.dto.request.RegisterRequest;
 import com.ist.idp.exceptions.UserAlreadyExistsException;
 import com.ist.idp.model.User;
 import com.ist.idp.repository.UserRepository;
@@ -94,5 +95,19 @@ public class AuthService {
         SecureRandom random = new SecureRandom();
         int num = random.nextInt(1000000);
         return String.format("%06d", num);
+    }
+
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        String userEmail = jwtService.getSubjectFromToken(request.refreshToken());
+        if (userEmail != null) {
+            var user = this.userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            String newAccessToken = jwtService.generateAccessToken(user);
+            String newRefreshToken = jwtService.generateRefreshToken(user);
+
+            return new AuthResponse(newAccessToken, newRefreshToken);
+        }
+        // Handle error correctly
+        throw new RuntimeException("Refresh token is invalid");
     }
 }

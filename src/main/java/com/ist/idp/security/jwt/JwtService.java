@@ -1,7 +1,7 @@
 package com.ist.idp.security.jwt;
 
 import com.ist.idp.model.User;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
@@ -53,7 +54,6 @@ public class JwtService {
     }
 
     public String generateAccessToken(User user) {
-
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
         String role = user.getAuthorities().stream()
@@ -81,5 +81,20 @@ public class JwtService {
                 .compact();
     }
 
-    // --- We will add token validation and claim extraction methods later ---
+    public String getSubjectFromToken(String token) {
+        return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(publicKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 }
