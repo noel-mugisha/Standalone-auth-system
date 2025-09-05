@@ -51,7 +51,7 @@ spring:
           linkedin:
             authorization-uri: https://www.linkedin.com/oauth/v2/authorization
             token-uri: https://www.linkedin.com/oauth/v2/accessToken
-            user-info-uri: https://api.linkedin.com/v2/userinfo
+            user-info-uri: https://api.linkedin.com/v2/openid/userinfo
             user-name-attribute: sub
 
 jwt:
@@ -62,6 +62,11 @@ jwt:
 
 frontend:
   redirect-url: ${FRONTEND_REDIRECT_URL}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
 
 server:
   port: 8080
