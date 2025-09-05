@@ -1,5 +1,6 @@
 package com.ist.idp.config;
 
+import com.ist.idp.filters.JwtAuthenticationFilter;
 import com.ist.idp.security.CustomOAuth2UserService;
 import com.ist.idp.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +29,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -36,9 +39,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        // Set our custom user details service
         authProvider.setUserDetailsService(customUserDetailsService);
-        // Set the password encoder
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -66,6 +67,7 @@ public class SecurityConfig {
                         )
                         .successHandler(oauth2LoginSuccessHandler)
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exc -> {
                     exc.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
                     exc.accessDeniedHandler(((request, response, accessDeniedException) ->
