@@ -3,6 +3,8 @@ package com.ist.idp.service;
 import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.dto.request.LoginRequest;
 import com.ist.idp.enums.Role;
+import com.ist.idp.exceptions.OtpException;
+import com.ist.idp.exceptions.ResourceNotFoundException;
 import com.ist.idp.security.jwt.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -60,7 +62,7 @@ public class AuthService {
                 )
         );
         var user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.email()));
 
         // Generate tokens
         String accessToken = jwtService.generateAccessToken(user);
@@ -72,17 +74,14 @@ public class AuthService {
     @Transactional
     public void verifyOtp(String email, String otp) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        // Check if the provided OTP is correct
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         if (!otp.equals(user.getOtp())) {
-            throw new RuntimeException("Invalid OTP");
+            throw new OtpException("Invalid OTP provided.");
         }
-        // Check if the OTP has expired
         LocalDateTime otpGeneratedTime = user.getOtpGeneratedTime();
         if (LocalDateTime.now().isAfter(otpGeneratedTime.plusMinutes(OTP_VALID_DURATION))) {
-            throw new RuntimeException("OTP has expired");
+            throw new OtpException("OTP has expired. Please register again to receive a new one.");
         }
-        // Mark user as verified and clear OTP fields
         user.setEmailVerified(true);
         user.setOtp(null);
         user.setOtpGeneratedTime(null);
@@ -90,7 +89,6 @@ public class AuthService {
     }
 
     private String generateOtp() {
-        // Generate a 6-digit OTP
         SecureRandom random = new SecureRandom();
         int num = random.nextInt(1000000);
         return String.format("%06d", num);
@@ -100,7 +98,7 @@ public class AuthService {
         String userEmail = jwtService.getSubjectFromToken(refreshToken);
         if (userEmail != null) {
             var user = this.userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found for the provided token."));
             String newAccessToken = jwtService.generateAccessToken(user);
             String newRefreshToken = jwtService.generateRefreshToken(user);
 

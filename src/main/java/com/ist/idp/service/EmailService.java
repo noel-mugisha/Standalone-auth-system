@@ -1,5 +1,6 @@
 package com.ist.idp.service;
 
+import com.ist.idp.exceptions.OtpException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -23,7 +24,7 @@ public class EmailService {
             message.setText("Your OTP for email verification is: " + otp + "\nIt is valid for 10 minutes.");
             mailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send OTP email", e);
+            throw new OtpException("Failed to send OTP email.");
         }
     }
 }
