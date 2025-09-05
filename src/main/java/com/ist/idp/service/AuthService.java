@@ -1,6 +1,5 @@
 package com.ist.idp.service;
 
-import com.ist.idp.dto.request.RefreshTokenRequest;
 import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.dto.request.LoginRequest;
 import com.ist.idp.enums.Role;
@@ -97,8 +96,8 @@ public class AuthService {
         return String.format("%06d", num);
     }
 
-    public AuthResponse refreshToken(RefreshTokenRequest request) {
-        String userEmail = jwtService.getSubjectFromToken(request.refreshToken());
+    public AuthResponse refreshToken(String refreshToken) {
+        String userEmail = jwtService.getSubjectFromToken(refreshToken);
         if (userEmail != null) {
             var user = this.userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("User not found"));

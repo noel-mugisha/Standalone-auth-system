@@ -1,18 +1,17 @@
 package com.ist.idp.controller;
 
-import com.ist.idp.dto.request.RefreshTokenRequest;
-import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.dto.request.LoginRequest;
 import com.ist.idp.dto.request.RegisterRequest;
 import com.ist.idp.dto.request.VerifyOtpRequest;
+import com.ist.idp.dto.response.AuthResponse;
+import com.ist.idp.dto.response.AuthResponseDto;
 import com.ist.idp.service.AuthService;
+import com.ist.idp.utils.CookieUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final CookieUtil cookieUtil;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
@@ -28,9 +28,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequest request) {
+        AuthResponse authResponse = authService.login(request);
+        HttpHeaders headers = new HttpHeaders();
+        cookieUtil.addCookieToResponse(headers, "refresh_token", authResponse.refreshToken());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(new AuthResponseDto(authResponse.accessToken()));
     }
 
     @PostMapping("/verify-otp")
@@ -40,9 +44,15 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        AuthResponse response = authService.refreshToken(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthResponseDto> refreshToken(
+            @CookieValue(name = "refresh_token") String refreshToken
+    ) {
+        AuthResponse authResponse = authService.refreshToken(refreshToken);
+        HttpHeaders headers = new HttpHeaders();
+        cookieUtil.addCookieToResponse(headers, "refresh_token", authResponse.refreshToken());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(new AuthResponseDto(authResponse.accessToken()));
     }
 
 }
