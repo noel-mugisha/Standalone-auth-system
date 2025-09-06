@@ -1,4 +1,6 @@
 package com.ist.idp.dto.request;
 
-public record RegisterRequest(String email, String password) {
+import com.ist.idp.enums.Role;
+
+public record RegisterRequest(String email, String password, Role role) {
 }

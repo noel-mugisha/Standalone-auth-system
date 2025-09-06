@@ -38,11 +38,14 @@ public class AuthService {
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new UserAlreadyExistsException("User with email " + request.email() + " already exists.");
         }
+        if (request.role() == Role.ADMIN) {
+            throw new IllegalArgumentException("Cannot register as an ADMIN.");
+        }
         String otp = generateOtp();
         var user = User.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
-                .role(Role.USER)
+                .role(request.role())
                 .emailVerified(false) // Initially not verified
                 .otp(otp)
                 .otpGeneratedTime(LocalDateTime.now())
