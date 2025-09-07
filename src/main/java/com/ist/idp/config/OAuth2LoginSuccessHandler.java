@@ -3,7 +3,6 @@ package com.ist.idp.config;
 import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.repository.UserRepository;
 import com.ist.idp.security.jwt.JwtService;
-import com.ist.idp.utils.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    private final CookieUtil cookieUtil;
 
     @Value("${frontend.redirect-url}")
     private String frontendRedirectUrl;
@@ -41,11 +39,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 jwtService.generateAccessToken(user),
                 jwtService.generateRefreshToken(user)
         );
-
-        cookieUtil.addCookieToServletResponse(response, "refresh_token", authResponse.refreshToken());
-
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendRedirectUrl)
                 .queryParam("access_token", authResponse.accessToken())
+                .queryParam("refresh_token", authResponse.refreshToken())
                 .build().toUriString();
 
         response.sendRedirect(redirectUrl);

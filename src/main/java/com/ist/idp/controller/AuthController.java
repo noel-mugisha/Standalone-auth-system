@@ -7,12 +7,13 @@ import com.ist.idp.dto.response.ApiMessageResponse;
 import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.dto.response.AuthResponseDto;
 import com.ist.idp.service.AuthService;
-import com.ist.idp.utils.CookieUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final CookieUtil cookieUtil;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -31,11 +31,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequest request) {
         AuthResponse authResponse = authService.login(request);
-        HttpHeaders headers = new HttpHeaders();
-        cookieUtil.addCookieToResponseHeaders(headers, "refresh_token", authResponse.refreshToken());
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(new AuthResponseDto(authResponse.accessToken()));
+        return ResponseEntity.ok(new AuthResponseDto(authResponse.accessToken(), authResponse.refreshToken()));
     }
 
     @PostMapping("/verify-otp")
@@ -45,15 +41,9 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponseDto> refreshToken(
-            @CookieValue(name = "refresh_token") String refreshToken
-    ) {
-        AuthResponse authResponse = authService.refreshToken(refreshToken);
-        HttpHeaders headers = new HttpHeaders();
-        cookieUtil.addCookieToResponseHeaders(headers, "refresh_token", authResponse.refreshToken());
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(new AuthResponseDto(authResponse.accessToken()));
+    public ResponseEntity<AuthResponseDto> refreshToken(@RequestBody AuthResponseDto request) {
+        AuthResponse authResponse = authService.refreshToken(request.refreshToken());
+        return ResponseEntity.ok(new AuthResponseDto(authResponse.accessToken(), authResponse.refreshToken()));
     }
 
 }
