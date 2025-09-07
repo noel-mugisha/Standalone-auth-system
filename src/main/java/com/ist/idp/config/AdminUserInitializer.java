@@ -24,7 +24,7 @@ public class AdminUserInitializer {
     public CommandLineRunner initAdminUser() {
         return args -> {
             String adminEmail = "admin@example.com";
-            String adminPassword = "admin";
+            String adminPassword = "admin123";
             
             // Check if admin user already exists
             if (userRepository.findByEmail(adminEmail).isEmpty()) {
