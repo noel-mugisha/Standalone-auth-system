@@ -1,7 +1,6 @@
 package com.ist.idp.config;
 
 import com.ist.idp.filters.JwtAuthenticationFilter;
-import com.ist.idp.security.CustomOAuth2UserService;
 import com.ist.idp.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,10 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -54,20 +50,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/.well-known/jwks.json").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .anyRequest().authenticated()
-                )
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(oauth2LoginSuccessHandler)
-                        .failureHandler(oAuth2LoginFailureHandler)
+                        // Enforce statelessness for our API
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints for local auth & registration
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Public endpoint for JWKS
+                        .requestMatchers("/.well-known/jwks.json").permitAll()
+                        // Public endpoints for our NEW manual LinkedIn flow
+                        .requestMatchers("/linkedin/authorize", "/linkedin/callback").permitAll()
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exc -> {
@@ -75,7 +69,6 @@ public class SecurityConfig {
                     exc.accessDeniedHandler(((request, response, accessDeniedException) ->
                             response.setStatus(HttpStatus.FORBIDDEN.value())));
                 });
-
 
         return http.build();
     }

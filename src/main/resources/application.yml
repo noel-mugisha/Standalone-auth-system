@@ -39,23 +39,15 @@ spring:
             enable: true
             required: true
 
-  security:
-    oauth2:
-      client:
-        registration:
-          linkedin:
-            client-id: ${LINKEDIN_CLIENT_ID}
-            client-secret: ${LINKEDIN_CLIENT_SECRET}
-            scope: openid, profile, email
-            redirect-uri: http://localhost:8080/login/oauth2/code/linkedin
-            authorization-grant-type: authorization_code
-            client-name: LinkedIn
-        provider:
-          linkedin:
-            authorization-uri: https://www.linkedin.com/oauth/v2/authorization
-            token-uri: https://www.linkedin.com/oauth/v2/accessToken
-            user-info-uri: https://api.linkedin.com/v2/openid/userinfo
-            user-name-attribute: sub
+linkedin:
+  api:
+    client-id: ${LINKEDIN_CLIENT_ID}
+    client-secret: ${LINKEDIN_CLIENT_SECRET}
+    scope: openid profile email
+    redirect-uri: http://localhost:8080/linkedin/callback
+    authorization-uri: https://www.linkedin.com/oauth/v2/authorization
+    token-uri: https://www.linkedin.com/oauth/v2/accessToken
+    user-info-uri: https://api.linkedin.com/v2/userinfo
 
 jwt:
   access-token:
