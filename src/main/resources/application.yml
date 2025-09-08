@@ -44,7 +44,7 @@ linkedin:
     client-id: ${LINKEDIN_CLIENT_ID}
     client-secret: ${LINKEDIN_CLIENT_SECRET}
     scope: openid profile email
-    redirect-uri: http://localhost:8080/linkedin/callback
+    redirect-uri: ${LINKEDIN_REDIRECT_URI}
     authorization-uri: https://www.linkedin.com/oauth/v2/authorization
     token-uri: https://www.linkedin.com/oauth/v2/accessToken
     user-info-uri: https://api.linkedin.com/v2/userinfo
@@ -66,3 +66,7 @@ logging:
 
 server:
   port: 8080
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://127.0.0.1:5500,http://localhost:3000,http://localhost:4000}
