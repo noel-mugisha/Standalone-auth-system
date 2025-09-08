@@ -3,8 +3,10 @@ package com.ist.idp.config;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -13,10 +15,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
 
-    // Use a proper logger
     private static final Logger logger = LoggerFactory.getLogger(OAuth2LoginFailureHandler.class);
+
+    @Value("${frontend.login-widget}")
+    private String frontendLoginWidget;
 
     @Override
     public void onAuthenticationFailure(
@@ -33,8 +38,13 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
 
         // For the user, redirect them to a frontend page with a clear error message
         // This is better than showing a generic 401 page.
-        String frontendErrorUrl = "http://your-frontend-widget-url/login?error=true&message=linkedin_login_failed";
+        String errorMessage = "linkedin_login_failed";
 
-        response.sendRedirect(frontendErrorUrl);
+        String redirectUrl = UriComponentsBuilder.fromUriString(frontendLoginWidget)
+                .queryParam("error", "true")
+                .queryParam("message", errorMessage)
+                .build().toUriString();
+
+        response.sendRedirect(redirectUrl);
     }
 }

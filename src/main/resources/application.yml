@@ -65,6 +65,7 @@ jwt:
 
 frontend:
   redirect-url: ${FRONTEND_REDIRECT_URL}
+  login-widget: ${FRONTEND_LOGIN_WIDGET}
 
 logging:
   level:
