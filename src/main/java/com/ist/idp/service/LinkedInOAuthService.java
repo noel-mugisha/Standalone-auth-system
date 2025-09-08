@@ -31,9 +31,7 @@ public class LinkedInOAuthService {
     @Value("${linkedin.api.user-info-uri}")
     private String userInfoUri;
 
-    /**
-     * Exchanges the authorization code for an access token.
-     */
+
     public String getAccessToken(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -52,11 +50,9 @@ public class LinkedInOAuthService {
         return response != null ? response.accessToken() : null;
     }
 
-    /**
-     * Fetches user details from LinkedIn using the access token.
-     */
+     //Fetches user details from LinkedIn using the access token.
     public LinkedInUserDetails getUserDetails(String accessToken) {
-        String url = userInfoUri; // The user-info-uri already includes the path
+        String url = userInfoUri;
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>("", headers);
@@ -64,14 +60,12 @@ public class LinkedInOAuthService {
         return restTemplate.exchange(url, HttpMethod.GET, entity, LinkedInUserDetails.class).getBody();
     }
 
-    // DTO for LinkedIn's token response
     private record LinkedInTokenResponse(
             @JsonProperty("access_token") String accessToken,
             @JsonProperty("expires_in") int expiresIn,
             @JsonProperty("scope") String scope
     ) {}
 
-    // DTO for LinkedIn's user info response
     public record LinkedInUserDetails(
             String sub,
             String name,

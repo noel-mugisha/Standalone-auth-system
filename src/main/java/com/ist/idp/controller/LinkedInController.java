@@ -28,7 +28,6 @@ public class LinkedInController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
-    // These values are now correctly loaded from the updated application.yml
     @Value("${linkedin.api.client-id}")
     private String clientId;
     @Value("${linkedin.api.redirect-uri}")
@@ -44,7 +43,6 @@ public class LinkedInController {
     public void initiateAuthorization(HttpServletResponse response) throws IOException {
         String state = UUID.randomUUID().toString();
 
-        // The UriComponentsBuilder will correctly handle the space-separated scope.
         String url = UriComponentsBuilder.fromUriString(authorizationUri)
                 .queryParam("response_type", "code")
                 .queryParam("client_id", clientId)
@@ -57,28 +55,19 @@ public class LinkedInController {
 
     @GetMapping("/callback")
     public void handleCallback(@RequestParam("code") String code, @RequestParam("state") String state, HttpServletResponse httpServletResponse) throws IOException {
-        // Exchange authorization code for access token
         String accessToken = linkedInOAuthService.getAccessToken(code);
-
         if (accessToken == null) {
-            // Handle error - redirect to a failure page
             httpServletResponse.sendRedirect("/error?message=linkedin_token_exchange_failed");
             return;
         }
 
-        // Fetch user details from LinkedIn
         LinkedInOAuthService.LinkedInUserDetails userDetails = linkedInOAuthService.getUserDetails(accessToken);
-
-        // Find or create user in the database (logic adapted from your CustomOAuth2UserService)
         User appUser = findOrCreateUser(userDetails);
-
-        // Generate application-specific JWTs
         AuthResponse authResponse = new AuthResponse(
                 jwtService.generateAccessToken(appUser),
                 jwtService.generateRefreshToken(appUser)
         );
 
-        // Redirect user to the frontend application with tokens
         String finalRedirectUrl = UriComponentsBuilder.fromUriString(frontendRedirectUrl)
                 .queryParam("access_token", authResponse.accessToken())
                 .queryParam("refresh_token", authResponse.refreshToken())

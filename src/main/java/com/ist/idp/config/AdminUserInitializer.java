@@ -25,7 +25,7 @@ public class AdminUserInitializer {
         return args -> {
             String adminEmail = "admin@example.com";
             String adminPassword = "admin123";
-            
+
             // Check if admin user already exists
             if (userRepository.findByEmail(adminEmail).isEmpty()) {
                 User adminUser = User.builder()
@@ -34,7 +34,7 @@ public class AdminUserInitializer {
                         .role(Role.ADMIN)
                         .emailVerified(true)
                         .build();
-                
+
                 userRepository.save(adminUser);
                 log.info("Created default admin user with email: {}", adminEmail);
             } else {

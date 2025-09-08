@@ -1,21 +1,21 @@
 package com.ist.idp.service;
 
-import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.dto.request.LoginRequest;
+import com.ist.idp.dto.request.RegisterRequest;
+import com.ist.idp.dto.response.AuthResponse;
 import com.ist.idp.enums.Role;
 import com.ist.idp.exceptions.OtpException;
 import com.ist.idp.exceptions.ResourceNotFoundException;
-import com.ist.idp.security.jwt.JwtService;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.stereotype.Service;
-
-import com.ist.idp.dto.request.RegisterRequest;
+import com.ist.idp.exceptions.TokenRefreshException;
 import com.ist.idp.exceptions.UserAlreadyExistsException;
 import com.ist.idp.model.User;
 import com.ist.idp.repository.UserRepository;
+import com.ist.idp.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
@@ -25,13 +25,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final long OTP_VALID_DURATION = 10; // 10 minutes
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-
-    private static final long OTP_VALID_DURATION = 10; // 10 minutes
 
     @Transactional
     public User register(RegisterRequest request) {
@@ -108,6 +107,6 @@ public class AuthService {
             return new AuthResponse(newAccessToken, newRefreshToken);
         }
         // Handle error correctly
-        throw new RuntimeException("Refresh token is invalid");
+        throw new TokenRefreshException("Refresh token is invalid");
     }
 }

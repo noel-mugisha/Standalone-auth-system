@@ -1,7 +1,8 @@
 package com.ist.idp.security.jwt;
 
 import com.ist.idp.model.User;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
