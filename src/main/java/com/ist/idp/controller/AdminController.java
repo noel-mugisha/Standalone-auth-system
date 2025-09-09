@@ -1,6 +1,7 @@
 package com.ist.idp.controller;
 
 import com.ist.idp.dto.response.ApiMessageResponse;
+import com.ist.idp.dto.response.UserDto;
 import com.ist.idp.enums.Role;
 import com.ist.idp.exceptions.ResourceNotFoundException;
 import com.ist.idp.model.User;
@@ -10,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -41,5 +44,22 @@ public class AdminController {
         userRepository.save(user);
 
         return ResponseEntity.ok(new ApiMessageResponse("User role updated successfully to " + newRole.name()));
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<UserDto> users = userRepository.findAll()
+                .stream()
+                .map(user -> new UserDto(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getRole().name(),
+                        user.isEmailVerified(),
+                        user.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(users);
     }
 }

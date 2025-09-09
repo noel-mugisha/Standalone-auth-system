@@ -51,7 +51,7 @@ linkedin:
 
 jwt:
   access-token:
-    expiration-ms: 60000 # 15 minutes
+    expiration-ms: 900000 # 15 minutes
   refresh-token:
     expiration-ms: 604800000 # 7 days
 
