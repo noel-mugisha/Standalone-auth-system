@@ -1,0 +1,52 @@
+# Maven
+target/
+pom.xml.versionsBackup
+pom.xml.releaseBackup
+.mvn/timing*
+
+# IDE specific files
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.vscode/
+.classpath
+.project
+.springBeans
+
+# Build output
+*.jar
+!target/*.jar
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Maven wrapper
+.mvn/wrapper/
+mvnw
+mvnw.cmd
+
+
+# Test reports
+surefire-reports/
+failsafe-reports/
+test-output/
+
+# Local development
+.idea
+*.swp
+*~
